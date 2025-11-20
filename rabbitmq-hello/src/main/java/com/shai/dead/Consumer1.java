@@ -25,17 +25,24 @@ public class Consumer1 {
         channel.exchangeDeclare(NORMAL_EXCHANGE, BuiltinExchangeType.DIRECT);
         channel.exchangeDeclare(DEAD_EXCHANGE, BuiltinExchangeType.DIRECT);
         // 声明死信和普通队列
-        Map<String, String> arguments = new HashMap<>();
+        Map<String, Object> arguments = new HashMap<>();
         // 绑定死信队列
         arguments.put("x-dead-letter-exchange", DEAD_EXCHANGE);
         // 设置死信RoutingKey
         arguments.put("x-dead-letter-routing-key", "lisi");
-        channel.queueDeclare(NORMAL_QUEUE, false, false, false, null);
+        // 设置正常队列长度限制
+        arguments.put("x-max-length", 6);
+        channel.queueDeclare(NORMAL_QUEUE, false, false, false, arguments);
         channel.queueDeclare(DEAD_QUEUE, false, false, false, null);
+        // 绑定普通交换机与普通队列
+        channel.queueBind(NORMAL_QUEUE, NORMAL_EXCHANGE, "zhangsan");
+        // 绑定死信交换机与死信队列
+        channel.queueBind(DEAD_QUEUE, DEAD_EXCHANGE, "lisi");
+        System.out.println("Consumer1等待接收消息...");
 
         // 接收消息
         DeliverCallback deliverCallback = (consumerTag, message) -> {
-            System.out.println("接收到消息：" + new String(message.getBody(), StandardCharsets.UTF_8));
+            System.out.println("Consumer1接收到消息：" + new String(message.getBody(), StandardCharsets.UTF_8));
         };
         channel.basicConsume(NORMAL_QUEUE, deliverCallback, consumerTag -> {
         });

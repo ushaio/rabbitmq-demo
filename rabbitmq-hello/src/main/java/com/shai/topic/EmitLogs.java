@@ -1,13 +1,10 @@
 package com.shai.topic;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.MessageProperties;
 import com.shai.utils.RabbitUtils;
-import com.shaio.util.RabbitUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 /**
  * @Description: 发送消息
