@@ -19,6 +19,7 @@ public class Producer {
         for (int i = 0; i < 10; i++) {
             String message = "info-" + i;
             channel.basicPublish(NORMAL_EXCHANGE, "zhangsan", null, message.getBytes());
+            System.out.println("发送了消息：" + message);
         }
         channel.queueDeclare();
     }
