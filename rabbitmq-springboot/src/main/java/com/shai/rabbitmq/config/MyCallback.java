@@ -2,6 +2,7 @@ package com.shai.rabbitmq.config;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class MyCallback implements RabbitTemplate.ConfirmCallback {
+public class MyCallback implements RabbitTemplate.ConfirmCallback, RabbitTemplate.ReturnsCallback {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -23,6 +24,7 @@ public class MyCallback implements RabbitTemplate.ConfirmCallback {
     public void init() {
         // 注入
         rabbitTemplate.setConfirmCallback(this);
+        rabbitTemplate.setReturnsCallback(this);
     }
 
 
@@ -42,6 +44,20 @@ public class MyCallback implements RabbitTemplate.ConfirmCallback {
         } else { // 失败
             log.info("MyCallback：交换机未收到消息，ID:{}, CAUSE: {}", id, cause);
         }
+    }
+
+    /**
+     * @param returnedMessage 退回的消息
+     * @desc 队列确认回调方法
+     */
+    @Override
+    public void returnedMessage(ReturnedMessage returnedMessage) {
+        log.error("MyCallback：消息 {} 被交换机 {} 退回，退回原因：{}，路由Key：{}",
+                new String(returnedMessage.getMessage().getBody()),
+                returnedMessage.getExchange(),
+                returnedMessage.getReplyText(),
+                returnedMessage.getRoutingKey());
+
     }
 }
 

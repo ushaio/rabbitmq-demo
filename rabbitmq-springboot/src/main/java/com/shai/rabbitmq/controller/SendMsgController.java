@@ -41,6 +41,7 @@ public class SendMsgController {
     }
 
     /**
+     * localhost:8080/ttl/sendExpirationMsg/1000/hello
      * @description: 基于上面的方法，无法设置自定义的ttl时间
      * @author: shai
      * @date: 2025/11/23 16:15
