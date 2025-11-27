@@ -17,9 +17,9 @@ import java.util.Map;
 @Configuration
 public class DelayedQueueConfig {
     // 交换机
-    public static final String DELAYED_QUEUE_NAME = "delayed.queue";
+    public static final String DELAYED_QUEUE_NAME = "delayed_queue";
     // 队列
-    public static final String DELAYED_EXCHANGE_NAME = "delayed.exchange";
+    public static final String DELAYED_EXCHANGE_NAME = "delayed_exchange";
     // routingkey
     public static final String DELAYED_ROUTING_KEY = "delayed.routingkey";
 
