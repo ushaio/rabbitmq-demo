@@ -1,0 +1,60 @@
+package com.shai.rabbitmq.config;
+
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+/**
+ * 回调实现类
+ * 1. 实例化MyCallback
+ * 2. @Autowired注入
+ * 3. @PostConstruct注入
+ */
+@Slf4j
+@Component
+public class MyCallback implements RabbitTemplate.ConfirmCallback {
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @PostConstruct
+    public void init() {
+        // 注入
+        rabbitTemplate.setConfirmCallback(this);
+    }
+
+
+    // ⬇️ 此时还不能调用其MyCallback的confirm方法，需要注入到RabbitTemplate
+
+    /**
+     * @param correlationData 保存回调消息的ID及相关信息
+     * @param ack             交换机是否收到消息
+     * @param cause           失败原因
+     * @desc 交换机确认回调方法
+     */
+    @Override
+    public void confirm(CorrelationData correlationData, boolean ack, String cause) {
+        String id = correlationData != null ? correlationData.getId() : "";
+        if (ack) { // 成功
+            log.info("MyCallback：交换机收到消息，ID: {}", id);
+        } else { // 失败
+            log.info("MyCallback：交换机未收到消息，ID:{}, CAUSE: {}", id, cause);
+        }
+    }
+}
+
+/*
+发送消息内容：hellooooooooo1
+----------------------------
+发送消息内容：hellooooooooo2
+----------------------------
+发送消息内容：hellooooooooo3
+----------------------------
+Consumer：收到 confirm.queue 队列的消息：hellooooooooo1
+MyCallback：交换机收到消息，ID: 1
+Shutdown Signal: channel error; protocol method: #method<channel.close>(reply-code=404, reply-text=NOT_FOUND - no exchange 'confirm.exchange2' in vhost '/', class-id=60, method-id=40)
+MyCallback：交换机未收到消息，ID:2, CAUSE: channel error; protocol method: #method<channel.close>(reply-code=404, reply-text=NOT_FOUND - no exchange 'confirm.exchange2' in vhost '/', class-id=60, method-id=40)
+MyCallback：交换机收到消息，ID: 3
+ */

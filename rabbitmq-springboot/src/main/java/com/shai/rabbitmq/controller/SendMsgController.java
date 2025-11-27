@@ -1,5 +1,7 @@
 package com.shai.rabbitmq.controller;
 
+import com.shai.rabbitmq.config.ConfirmConfig;
+import com.shai.rabbitmq.config.DelayedQueueConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -47,13 +49,43 @@ public class SendMsgController {
      **/
     @RequestMapping("sendExpirationMsg/{ttl}/{message}")
     public String sendExpirationMsg(@PathVariable String ttl, @PathVariable String message) {
-        log.info("当前时间：{}，发送一条时长 {}ms 的消息给QC TTL队列：{}", new Date(), ttl
-                , message);
+        log.info("当前时间：{}，发送一条时长 {}ms 的消息给QC TTL队列：{}", new Date(), ttl, message);
         // 通过XC实现交换机X给QC队列发送消息
         rabbitTemplate.convertAndSend("X", "XC", message, msg -> {
             msg.getMessageProperties().setExpiration(ttl);
             return msg;
         });
         return "发送消息成功";
+    }
+
+    /**
+     * 延迟队列
+     *
+     * @param message
+     * @param delayTime
+     * @return
+     */
+    @RequestMapping("/sendDelayedMsg/{message}/{delayTime}")
+    public String sendDelayedMsg(@PathVariable String message, @PathVariable Long delayTime) {
+        log.info("当前时间：{}，发送一条时长 {}ms 的消息给延迟队列：{}", new Date(), delayTime, message);
+        rabbitTemplate.convertAndSend(DelayedQueueConfig.DELAYED_EXCHANGE_NAME,
+                DelayedQueueConfig.DELAYED_ROUTING_KEY, message, msg -> {
+                    // 发送消息 延迟时间（ms）
+                    msg.getMessageProperties().setDelayLong(delayTime);
+                    return msg;
+                });
+        return "DelayedMsg消息发送成功！" + message;
+    }
+
+    @RequestMapping("/sendConfirmMsg/{message}/{delayTime}")
+    public String sendConfirmMsg(@PathVariable String message, @PathVariable Long delayTime) {
+        log.info("当前时间：{}，发送一条时长 {}ms 的消息给延迟队列：{}", new Date(), delayTime, message);
+        rabbitTemplate.convertAndSend(ConfirmConfig.CONFIRM_EXCHANGE_NAME,
+                ConfirmConfig.CONFIRM_ROUTING_KEY, message, msg -> {
+                    // 发送消息 延迟时间（ms）
+                    msg.getMessageProperties().setDelayLong(delayTime);
+                    return msg;
+                });
+        return "DelayedMsg消息发送成功！" + message;
     }
 }

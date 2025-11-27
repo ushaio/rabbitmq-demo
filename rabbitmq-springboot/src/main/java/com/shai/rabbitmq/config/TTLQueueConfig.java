@@ -20,10 +20,10 @@ public class TTLQueueConfig {
     // 交换机
     private static final String X_EXCHANGE = "X";
     private static final String Y_DEAD_LETTER_EXCHANGE = "Y";
-    // 普通队列
+    // 普通队列 有TTL
     private static final String QUEUE_A = "QA";
     private static final String QUEUE_B = "QB";
-    //
+    // 普通队列 无过期时间
     private static final String QUEUE_C = "QC";
     // 死信队列
     private static final String DEAD_LETTER_QUEUE = "QD";
