@@ -27,7 +27,7 @@ public class ConfirmConfig {
     public static final String WARNING_QUEUE_NAME = "warning_queue";
 
     /**
-     * 声明队列
+     * 确认队列
      */
     @Bean("confirmQueue")
     public Queue confirmQueue() {
@@ -35,7 +35,7 @@ public class ConfirmConfig {
     }
 
     /**
-     * 声明交换机
+     * 确认换机 转发给备份交换机
      */
     @Bean("confirmExchange")
     public DirectExchange confirmExchange() {
@@ -85,9 +85,19 @@ public class ConfirmConfig {
      * 绑定备份队列
      */
     @Bean
-    public Binding backupQueueBindingExchange(@Qualifier("backupQueue") Queue backupQueue,
-                                              @Qualifier("backupExchange") FanoutExchange backupExchange) {
+    public Binding backupQueueBindingBackupExchange(@Qualifier("backupQueue") Queue backupQueue,
+                                                    @Qualifier("backupExchange") FanoutExchange backupExchange) {
         return BindingBuilder.bind(backupQueue)
+                .to(backupExchange);
+    }
+
+    /**
+     * 绑定报警队列
+     */
+    @Bean
+    public Binding warningQueueBindingBackupExchange(@Qualifier("warningQueue") Queue warningQueue,
+                                                     @Qualifier("backupExchange") FanoutExchange backupExchange) {
+        return BindingBuilder.bind(warningQueue)
                 .to(backupExchange);
     }
 }

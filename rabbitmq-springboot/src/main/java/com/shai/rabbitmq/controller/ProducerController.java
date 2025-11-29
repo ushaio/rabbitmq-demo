@@ -24,14 +24,14 @@ public class ProducerController {
     public String sendMessage(@PathVariable("message") String message) {
         final String defaultMsg = message;
         // 正常
-        // CorrelationData correlationData = new CorrelationData("1");
-        // message = defaultMsg + correlationData.getId();
-        // rabbitTemplate.convertAndSend(
-        //         ConfirmConfig.CONFIRM_EXCHANGE_NAME,
-        //         ConfirmConfig.CONFIRM_ROUTING_KEY,
-        //         message, correlationData);
-        // log.info("发送消息内容：{}", message);
-        // log.info("----------------------------");
+        CorrelationData correlationData = new CorrelationData("1");
+        message = defaultMsg + correlationData.getId();
+        rabbitTemplate.convertAndSend(
+                ConfirmConfig.CONFIRM_EXCHANGE_NAME,
+                ConfirmConfig.CONFIRM_ROUTING_KEY,
+                message, correlationData);
+        log.info("发送消息内容：{}", message);
+        log.info("----------------------------");
         // 错误的交换机
         // CorrelationData correlationData2 = new CorrelationData("2");
         // message = defaultMsg + correlationData2.getId();

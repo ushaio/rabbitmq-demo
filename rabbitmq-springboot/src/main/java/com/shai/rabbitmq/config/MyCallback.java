@@ -60,17 +60,3 @@ public class MyCallback implements RabbitTemplate.ConfirmCallback, RabbitTemplat
 
     }
 }
-
-/*
-发送消息内容：hellooooooooo1
-----------------------------
-发送消息内容：hellooooooooo2
-----------------------------
-发送消息内容：hellooooooooo3
-----------------------------
-Consumer：收到 confirm.queue 队列的消息：hellooooooooo1
-MyCallback：交换机收到消息，ID: 1
-Shutdown Signal: channel error; protocol method: #method<channel.close>(reply-code=404, reply-text=NOT_FOUND - no exchange 'confirm.exchange2' in vhost '/', class-id=60, method-id=40)
-MyCallback：交换机未收到消息，ID:2, CAUSE: channel error; protocol method: #method<channel.close>(reply-code=404, reply-text=NOT_FOUND - no exchange 'confirm.exchange2' in vhost '/', class-id=60, method-id=40)
-MyCallback：交换机收到消息，ID: 3
- */
