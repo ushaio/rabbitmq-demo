@@ -11,6 +11,7 @@ public class VolatileOrderingDemo {
 
     public static void main(String[] args) throws InterruptedException {
         int i = 0;
+        // 无限循环，用于测试
         for (;;) {
             i++;
             x = 0; y = 0;
