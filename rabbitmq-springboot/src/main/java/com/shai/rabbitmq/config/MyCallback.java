@@ -47,6 +47,13 @@ public class MyCallback implements RabbitTemplate.ConfirmCallback, RabbitTemplat
     }
 
     /**
+     * @desc 队列确认回调方法
+     */
+    public void returnedMessage() {
+        returnedMessage(null);
+    }
+
+    /**
      * @param returnedMessage 退回的消息
      * @desc 队列确认回调方法
      */
