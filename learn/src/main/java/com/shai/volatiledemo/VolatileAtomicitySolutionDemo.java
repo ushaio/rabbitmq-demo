@@ -3,15 +3,14 @@ package com.shai.volatiledemo;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 演示 volatile 不保证原子性
- * volatile 仅保证可见性，不保证复合操作（如 i++）的原子性。
+ * 演示如何解决 volatile 不保证原子性的问题
+ * 使用 AtomicInteger 来替代 volatile，保证复合操作的原子性
  */
-public class VolatileAtomicityDemo {
-    private static volatile int count = 0;
+public class VolatileAtomicitySolutionDemo {
     private static AtomicInteger atomicCount = new AtomicInteger(0);
 
     public static void increment() {
-        count++; // 这是一个复合操作：读取、加一、写入。volatile 不能保证这三个步骤的原子性。
+        // 使用 AtomicInteger 的原子递增方法
         atomicCount.incrementAndGet();
     }
 
@@ -36,17 +35,16 @@ public class VolatileAtomicityDemo {
 
         // 等待所有线程执行完毕
         for (Thread t : threads) {
-            t.join(); // 等待线程结束
+            t.join();
         }
 
         // 预期结果应该是 threadsCount * iterations (10000)
-        // 但由于 volatile 不保证原子性，实际结果往往小于 10000
-        System.out.println("最终 count 值: " + count);
-        System.out.println("最终 atomicCount 值: " + atomicCount);
-        if (count < threadsCount * iterations) {
-            System.out.println("结果证明 volatile 不保证原子性。");
+        // 使用 AtomicInteger 后，结果应该总是正确的
+        System.out.println("最终 atomicCount 值: " + atomicCount.get());
+        if (atomicCount.get() == threadsCount * iterations) {
+            System.out.println("结果证明 AtomicInteger 保证了原子性。");
         } else {
-            System.out.println("本次运行恰好结果正确，请多次尝试。");
+            System.out.println("出现了意外情况，请重新运行。");
         }
     }
 }
