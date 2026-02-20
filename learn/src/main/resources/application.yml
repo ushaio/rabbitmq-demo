@@ -1,0 +1,15 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: learn
+
+# Builder 模式示例配置（与 UserProfileProperties 绑定）
+demo:
+  user:
+    username: shai
+    email: shai@example.com
+    age: 18
+    phone: "13800000000"
+    address: Shanghai
