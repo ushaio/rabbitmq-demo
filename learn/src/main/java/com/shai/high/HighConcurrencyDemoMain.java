@@ -80,28 +80,37 @@ public class HighConcurrencyDemoMain {
         
         System.out.println("1. 线程不安全演示:");
         ThreadUnsafeDemo.main(new String[]{});
-        System.out.println("\n" + "=".repeat(50) + "\n");
+        System.out.println("\n" + getRepeatedString("=", 50) + "\n");
         
         System.out.println("2. 线程安全演示:");
         ThreadSafeDemo.main(new String[]{});
-        System.out.println("\n" + "=".repeat(50) + "\n");
+        System.out.println("\n" + getRepeatedString("=", 50) + "\n");
         
         System.out.println("3. 原子操作演示:");
         AtomicDemo.main(new String[]{});
-        System.out.println("\n" + "=".repeat(50) + "\n");
+        System.out.println("\n" + getRepeatedString("=", 50) + "\n");
         
         System.out.println("4. 生产者-消费者演示:");
         ProducerConsumerDemo.main(new String[]{});
-        System.out.println("\n" + "=".repeat(50) + "\n");
+        System.out.println("\n" + getRepeatedString("=", 50) + "\n");
         
         System.out.println("5. 线程池演示:");
         ThreadPoolDemo.main(new String[]{});
-        System.out.println("\n" + "=".repeat(50) + "\n");
+        System.out.println("\n" + getRepeatedString("=", 50) + "\n");
         
         System.out.println("6. 性能优化演示:");
         PerformanceOptimizationDemo.main(new String[]{});
-        System.out.println("\n" + "=".repeat(50) + "\n");
+        System.out.println("\n" + getRepeatedString("=", 50) + "\n");
         
         System.out.println("所有演示运行完成!");
+    }
+    
+    // Java 8兼容的字符串重复方法
+    private static String getRepeatedString(String str, int count) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            sb.append(str);
+        }
+        return sb.toString();
     }
 }

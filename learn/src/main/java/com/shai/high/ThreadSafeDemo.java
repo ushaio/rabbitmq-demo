@@ -21,7 +21,7 @@ public class ThreadSafeDemo {
     }
 
     // 使用ReentrantLock的解决方案
-    public static void lockCounter() {
+    public static void reentrantCounter() {
         reentrantLock.lock();
         try {
             counter++;
@@ -59,7 +59,7 @@ public class ThreadSafeDemo {
         for (int i = 0; i < 10; i++) {
             threads[i] = new Thread(() -> {
                 for (int j = 0; j < 1000; j++) {
-                    lockCounter(); // 使用Lock
+                    reentrantCounter(); // 使用Lock
                 }
             });
             threads[i].start();
