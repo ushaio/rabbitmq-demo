@@ -1,4 +1,12 @@
-/rabbitmq-hello/target/
-/learn/target/
+# 编译输出目录
+**/target/
+
+# IDE 配置
 /.idea/
-/rabbitmq-springboot/target/
+*.iml
+
+# 编译产物
+*.class
+
+# 其他
+user.obj
