@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: spring-ai-learn
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-your-api-key-here}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      chat:
+        options:
+          model: deepseek-v4-pro
+          temperature: 0.7
+
+server:
+  port: 8081

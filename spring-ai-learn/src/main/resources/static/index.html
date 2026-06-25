@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring AI Chat</title>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <!-- Marked.js - Markdown 解析器 (v4.3.0 稳定版) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <!-- Highlight.js - 代码高亮 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #app {
+            width: 800px;
+            height: 600px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header .dot {
+            width: 10px;
+            height: 10px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.6;
+            font-size: 14px;
+            word-break: break-word;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+            white-space: pre-wrap;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: #f0f2f5;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.system {
+            align-self: center;
+            background: #fff3cd;
+            color: #856404;
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            white-space: pre-wrap;
+        }
+
+        /* ===== Markdown 渲染样式 ===== */
+        .message.assistant .markdown-body {
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .message.assistant .markdown-body p {
+            margin: 0 0 8px 0;
+        }
+
+        .message.assistant .markdown-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message.assistant .markdown-body h1,
+        .message.assistant .markdown-body h2,
+        .message.assistant .markdown-body h3,
+        .message.assistant .markdown-body h4 {
+            margin: 12px 0 6px 0;
+            font-weight: 600;
+        }
+
+        .message.assistant .markdown-body h1 { font-size: 1.3em; }
+        .message.assistant .markdown-body h2 { font-size: 1.2em; }
+        .message.assistant .markdown-body h3 { font-size: 1.1em; }
+
+        .message.assistant .markdown-body ul,
+        .message.assistant .markdown-body ol {
+            margin: 4px 0 8px 0;
+            padding-left: 20px;
+        }
+
+        .message.assistant .markdown-body li {
+            margin: 2px 0;
+        }
+
+        .message.assistant .markdown-body code {
+            background: #e8eaed;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            color: #c7254e;
+        }
+
+        .message.assistant .markdown-body pre {
+            background: #1e1e1e;
+            padding: 12px 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .message.assistant .markdown-body pre code {
+            background: none;
+            color: #d4d4d4;
+            padding: 0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .message.assistant .markdown-body blockquote {
+            border-left: 3px solid #667eea;
+            padding: 4px 12px;
+            margin: 8px 0;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .message.assistant .markdown-body table {
+            border-collapse: collapse;
+            margin: 8px 0;
+            width: 100%;
+            font-size: 13px;
+        }
+
+        .message.assistant .markdown-body th,
+        .message.assistant .markdown-body td {
+            border: 1px solid #ddd;
+            padding: 6px 10px;
+            text-align: left;
+        }
+
+        .message.assistant .markdown-body th {
+            background: #f0f2f5;
+            font-weight: 600;
+        }
+
+        .message.assistant .markdown-body strong {
+            font-weight: 600;
+        }
+
+        .message.assistant .markdown-body a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .message.assistant .markdown-body a:hover {
+            text-decoration: underline;
+        }
+
+        .message.assistant .markdown-body hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 12px 0;
+        }
+
+        .typing-indicator {
+            align-self: flex-start;
+            padding: 12px 16px;
+            background: #f0f2f5;
+            border-radius: 12px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        .input-area {
+            padding: 16px 20px;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            gap: 12px;
+            background: #fafafa;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .input-area button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .input-area button:hover { opacity: 0.9; }
+        .input-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .input-area .mode-select {
+            padding: 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            gap: 12px;
+        }
+
+        .welcome .icon { font-size: 48px; }
+        .welcome .text { font-size: 16px; }
+        .welcome .sub { font-size: 13px; color: #bbb; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="dot"></div>
+            <span>Spring AI Chat</span>
+            <span style="margin-left:auto; font-size:12px; opacity:0.8">
+                {{ mode === 'sync' ? '同步模式' : '流式模式' }}
+            </span>
+        </div>
+
+        <!-- 聊天区域 -->
+        <div class="chat-area" ref="chatArea">
+            <template v-if="messages.length === 0">
+                <div class="welcome">
+                    <div class="icon">🤖</div>
+                    <div class="text">欢迎使用 Spring AI Chat</div>
+                    <div class="sub">输入问题开始对话 · 支持同步/流式两种模式</div>
+                </div>
+            </template>
+
+            <template v-for="(msg, index) in messages" :key="index">
+                <!-- 用户消息：纯文本 -->
+                <div v-if="msg.role === 'user'" class="message user">
+                    {{ msg.content }}
+                </div>
+                <!-- 助手消息：Markdown 渲染 -->
+                <div v-else-if="msg.role === 'assistant'" class="message assistant">
+                    <div class="markdown-body" v-html="renderMarkdown(msg.content)"></div>
+                </div>
+                <!-- 系统消息：纯文本 -->
+                <div v-else class="message system">
+                    {{ msg.content }}
+                </div>
+            </template>
+
+            <div v-if="loading" class="typing-indicator">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="input-area">
+            <select class="mode-select" v-model="mode">
+                <option value="sync">同步</option>
+                <option value="stream">流式</option>
+            </select>
+            <input
+                v-model="input"
+                @keyup.enter="sendMessage"
+                placeholder="输入你的问题..."
+                :disabled="loading"
+            />
+            <button @click="sendMessage" :disabled="loading || !input.trim()">
+                {{ loading ? '思考中...' : '发送' }}
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, nextTick, onMounted } = Vue;
+
+        // 配置 marked.js
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(code, { language: lang }).value;
+                    } catch (e) {}
+                }
+                // 无指定语言时自动检测
+                try {
+                    return hljs.highlightAuto(code).value;
+                } catch (e) {}
+                return code;
+            },
+            breaks: true,   // 换行符转 <br>
+            gfm: true,       // GitHub 风格 Markdown
+        });
+
+        // 验证 marked.js 是否加载成功
+        console.log('[Markdown] marked.js loaded:', typeof marked !== 'undefined');
+        console.log('[Markdown] hljs loaded:', typeof hljs !== 'undefined');
+
+        createApp({
+            setup() {
+                const input = ref('');
+                const messages = ref([]);
+                const loading = ref(false);
+                const mode = ref('sync');
+                const chatArea = ref(null);
+
+                const scrollToBottom = () => {
+                    nextTick(() => {
+                        if (chatArea.value) {
+                            chatArea.value.scrollTop = chatArea.value.scrollHeight;
+                        }
+                    });
+                };
+
+                /**
+                 * 将 Markdown 文本渲染为 HTML
+                 * 优先使用 marked.js 解析，CDN 加载失败时使用内置轻量解析器
+                 */
+                const renderMarkdown = (content) => {
+                    if (!content) return '';
+                    try {
+                        if (typeof marked !== 'undefined' && marked.parse) {
+                            return marked.parse(content);
+                        }
+                    } catch (e) {
+                        console.warn('[Markdown] marked.js error, using fallback:', e);
+                    }
+                    // 内置轻量 Markdown 解析器（CDN 加载失败时兜底）
+                    return simpleMarkdown(content);
+                };
+
+                /**
+                 * 内置轻量 Markdown 解析器（不依赖外部库）
+                 * 支持：标题、粗体、斜体、行内代码、代码块、链接、列表、引用、分隔线
+                 */
+                const simpleMarkdown = (text) => {
+                    // 转义 HTML 特殊字符
+                    let html = text
+                        .replace(/&/g, '&')
+                        .replace(/</g, '<')
+                        .replace(/>/g, '>');
+
+                    // 代码块 ```lang\n...\n```
+                    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
+                    // 行内代码 `code`
+                    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+                    // 标题 ### h3, ## h2, # h1
+                    html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+                    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+                    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+                    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+                    // 粗体 **text**
+                    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                    // 斜体 *text*
+                    html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+                    // 链接 [text](url)
+                    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+                    // 引用 > text
+                    html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+                    // 分隔线 ---
+                    html = html.replace(/^---+$/gm, '<hr>');
+                    // 无序列表 - item 或 * item
+                    html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+                    html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+                    // 有序列表 1. item
+                    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+                    // 换行
+                    html = html.replace(/\n/g, '<br>');
+                    // 清理多余 <br>（在块元素前后）
+                    html = html.replace(/<br>(<\/?(h[1-6]|ul|ol|li|pre|blockquote|hr))/g, '$1');
+                    html = html.replace(/(<\/?(h[1-6]|ul|ol|li|pre|blockquote|hr)[^>]*>)<br>/g, '$1');
+                    return html;
+                };
+
+                const sendMessage = async () => {
+                    const text = input.value.trim();
+                    if (!text || loading.value) return;
+
+                    // 添加用户消息
+                    messages.value.push({ role: 'user', content: text });
+                    input.value = '';
+                    loading.value = true;
+                    scrollToBottom();
+
+                    if (mode.value === 'sync') {
+                        await sendSync(text);
+                    } else {
+                        await sendStream(text);
+                    }
+
+                    loading.value = false;
+                    scrollToBottom();
+                };
+
+                // 同步模式
+                const sendSync = async (text) => {
+                    try {
+                        const response = await fetch(`/ai/chat?message=${encodeURIComponent(text)}`);
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                        const data = await response.text();
+                        messages.value.push({ role: 'assistant', content: data });
+                    } catch (e) {
+                        messages.value.push({ role: 'system', content: `请求失败: ${e.message}` });
+                    }
+                };
+
+                // 流式模式（SSE）
+                const sendStream = async (text) => {
+                    try {
+                        const response = await fetch(`/ai/stream?message=${encodeURIComponent(text)}`);
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        let content = '';
+
+                        // 先添加一个空的 assistant 消息
+                        messages.value.push({ role: 'assistant', content: '' });
+                        const lastIndex = messages.value.length - 1;
+
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+
+                            const chunk = decoder.decode(value, { stream: true });
+                            // SSE 格式解析：每行以 "data:" 开头
+                            const lines = chunk.split('\n');
+                            for (const line of lines) {
+                                if (line.startsWith('data:')) {
+                                    content += line.substring(5);
+                                    messages.value[lastIndex].content = content;
+                                    scrollToBottom();
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        messages.value.push({ role: 'system', content: `流式请求失败: ${e.message}` });
+                    }
+                };
+
+                return {
+                    input, messages, loading, mode, chatArea,
+                    sendMessage, renderMarkdown
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
